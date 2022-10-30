@@ -28,12 +28,7 @@ def list_current_jobs() -> dict:
         Used for tab completion in the repl.
     """
 
-    resp = {}
-
-    for job in job_manager_state.jobs:
-        resp[str(job.id)] = str(job.id)
-
-    return resp
+    return {str(job.id): str(job.id) for job in job_manager_state.jobs}
 
 
 def pretty_concat(data: str, at_most: int = 75, left: bool = False) -> str:
@@ -54,10 +49,7 @@ def pretty_concat(data: str, at_most: int = 75, left: bool = False) -> str:
     if len(data) <= at_most:
         return data
 
-    if left:
-        return '...' + data[len(data) - at_most:]
-
-    return data[:at_most] + '...'
+    return f'...{data[len(data) - at_most:]}' if left else f'{data[:at_most]}...'
 
 
 def sizeof_fmt(num: float, suffix: str = 'B') -> str:

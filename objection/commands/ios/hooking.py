@@ -58,10 +58,7 @@ def _should_ignore_native_classes(args: list) -> bool:
         :return:
     """
 
-    if len(args) <= 0:
-        return False
-
-    return '--ignore-native' in args
+    return False if len(args) <= 0 else '--ignore-native' in args
 
 
 def _should_include_parent_methods(args: list) -> bool:
@@ -73,10 +70,7 @@ def _should_include_parent_methods(args: list) -> bool:
         :return:
     """
 
-    if len(args) <= 0:
-        return False
-
-    return '--include-parents' in args
+    return False if len(args) <= 0 else '--include-parents' in args
 
 
 def _class_is_prefixed_with_native(class_name: str) -> bool:
@@ -88,12 +82,7 @@ def _class_is_prefixed_with_native(class_name: str) -> bool:
         :return:
     """
 
-    for prefix in native_prefixes:
-
-        if class_name.startswith(prefix):
-            return True
-
-    return False
+    return any(class_name.startswith(prefix) for prefix in native_prefixes)
 
 
 def _string_is_true(s: str) -> bool:
@@ -104,7 +93,7 @@ def _string_is_true(s: str) -> bool:
         :return:
     """
 
-    return s.lower() in ('true', 'yes')
+    return s.lower() in {'true', 'yes'}
 
 
 def _should_dump_backtrace(args: list) -> bool:
@@ -188,12 +177,7 @@ def _get_flag_value(flag: str, args: list) -> Optional[str]:
         if args[i] == flag:
             target = i + 1
 
-    if target is None:
-        return None
-    elif target < len(args):
-        return args[target]
-    else:
-        return None
+    return None if target is None or target >= len(args) else args[target]
 
 
 def show_ios_classes(args: list = None) -> None:
@@ -339,11 +323,10 @@ def search(args: list) -> None:
         return
 
     # Print the matching methods
-    for klass in data.keys():
+    for klass, methods in data.items():
         if _should_print_only_classes(args):
             print(klass)
             continue
 
-        methods = data[klass]
         for method in methods:
             print(f'{method}')

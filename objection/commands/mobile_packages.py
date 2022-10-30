@@ -39,7 +39,12 @@ def patch_ios_ipa(source: str, codesign_signature: str, provision_file: str, bin
     # check if a gadget version was specified. if not, get the latest one.
     if gadget_version is not None:
         github_version = gadget_version
-        click.secho('Using manually specified version: {0}'.format(gadget_version), fg='green', bold=True)
+        click.secho(
+            'Using manually specified version: {0}'.format(github_version),
+            fg='green',
+            bold=True,
+        )
+
     else:
         github_version = github.get_latest_version()
         click.secho('Using latest Github gadget version: {0}'.format(github_version), fg='green', bold=True)
@@ -151,13 +156,18 @@ def patch_android_apk(source: str, architecture: str, pause: bool, skip_cleanup:
     # check if a gadget version was specified. if not, get the latest one.
     if gadget_version is not None:
         github_version = gadget_version
-        click.secho('Using manually specified version: {0}'.format(gadget_version), fg='green', bold=True)
+        click.secho(
+            'Using manually specified version: {0}'.format(github_version),
+            fg='green',
+            bold=True,
+        )
+
     else:
         github_version = github.get_latest_version()
         click.secho('Using latest Github gadget version: {0}'.format(github_version), fg='green', bold=True)
 
     # get local version of the stored gadget
-    local_version = android_gadget.get_local_version('android_' + architecture)
+    local_version = android_gadget.get_local_version(f'android_{architecture}')
 
     # check if the local version needs updating. this can be either because
     # the version is outdated or we simply don't have the gadget yet, or, we want
@@ -168,10 +178,10 @@ def patch_android_apk(source: str, architecture: str, pause: bool, skip_cleanup:
             github_version, local_version), fg='green')
 
         # download, unpack, update local version and cleanup the temp files.
-        android_gadget.download() \
-            .unpack() \
-            .set_local_version('android_' + architecture, github_version) \
-            .cleanup()
+        android_gadget.download().unpack().set_local_version(
+            f'android_{architecture}', github_version
+        ).cleanup()
+
 
     click.secho('Patcher will be using Gadget version: {0}'.format(github_version), fg='green')
 

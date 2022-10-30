@@ -37,7 +37,7 @@ def _string_is_true(s: str) -> bool:
         :return:
     """
 
-    return s.lower() in ('true', 'yes')
+    return s.lower() in {'true', 'yes'}
 
 
 def _should_dump_backtrace(args: list = None) -> bool:
@@ -121,12 +121,7 @@ def _get_flag_value(flag: str, args: list) -> Optional[str]:
         if args[i] == flag:
             target = i + 1
 
-    if target is None:
-        return None
-    elif target < len(args):
-        return args[target]
-    else:
-        return None
+    return None if target is None or target >= len(args) else args[target]
 
 
 def show_android_classes(args: list = None) -> None:
@@ -279,17 +274,13 @@ def search(args: list = None) -> None:
                     # but we only care about the className
                     start_index = loader.find('$className: ') + 12
                     start_part = loader[start_index:]
-                    if start_part.find('>'):
-                        end_index = start_part.find('>')
-                    else:
-                        end_index = start_part.find(' ')
+                    end_index = start_part.find('>') or start_part.find(' ')
                     loader = start_part[:end_index]
 
                 _class['overloads'] = api.android_hooking_get_class_methods_overloads(_class['name'], _class['methods'],
                                                                                       loader)
 
-        target_file = _get_flag_value('--json', args)
-        if target_file:
+        if target_file := _get_flag_value('--json', args):
             results_json['data'] = results
             with open(target_file, 'w') as fd:
                 fd.write(json.dumps(results_json))
@@ -394,7 +385,7 @@ def set_method_return_value(args: list = None) -> None:
 
     # check if we got an overload
     overload_filter = args[1].replace(' ', '') if len(args) == 3 else None
-    retval = True if _string_is_true(args[-1]) else False
+    retval = bool(_string_is_true(args[-1]))
 
     api = state_connection.get_api()
     api.android_hooking_set_method_return(class_name,

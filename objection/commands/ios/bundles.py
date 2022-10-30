@@ -38,13 +38,7 @@ def _is_apple_bundle(bundle: str) -> bool:
     """
 
     # This is a bit of an assumption, but ok.
-    if bundle is None:
-        return False
-
-    if bundle.startswith('com.apple'):
-        return True
-
-    return False
+    return False if bundle is None else bool(bundle.startswith('com.apple'))
 
 
 def show_frameworks(args: list = None) -> None:

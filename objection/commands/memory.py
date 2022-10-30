@@ -60,12 +60,11 @@ def _get_chunks(addr: int, size: int, block_size: int = BLOCK_SIZE) -> List:
     if size < block_size:
         return [(addr, size)]
 
-    block_count = size // block_size
-    extra_block = size % block_size
+    block_count, extra_block = divmod(size, block_size)
     current_address = addr
     ranges = []
 
-    for i in range(block_count):
+    for _ in range(block_count):
         ranges.append((current_address, block_size))
         current_address += block_size
 
@@ -109,7 +108,7 @@ def dump_all(args: list) -> None:
     api = state_connection.get_api()
     ranges = api.memory_list_ranges(access)
 
-    total_size = sum([x['size'] for x in ranges])
+    total_size = sum(x['size'] for x in ranges)
     click.secho('Will dump {0} {1} images, totalling {2}'.format(
         len(ranges), access, sizeof_fmt(total_size)), fg='green', dim=True)
 

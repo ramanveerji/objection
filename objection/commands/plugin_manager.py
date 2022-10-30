@@ -33,10 +33,7 @@ def load_plugin(args: list = None) -> None:
     plugin = spec.loader.load_module()
     spec.loader.exec_module(plugin)
 
-    namespace = plugin.namespace
-    if len(args) >= 2:
-        namespace = args[1]
-
+    namespace = args[1] if len(args) >= 2 else plugin.namespace
     plugin.__name__ = namespace
 
     # try and load the plugin (aka: run its __init__)

@@ -44,7 +44,7 @@ def simple(args: list) -> None:
         click.secho('No class / methods found')
         return
 
-    click.secho("var target = ObjC.classes.{};".format(classname), dim=True)
+    click.secho(f"var target = ObjC.classes.{classname};", dim=True)
 
     for method in methods:
         hook = """

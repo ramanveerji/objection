@@ -92,8 +92,11 @@ class Plugin(ABC):
 
         # check for a custom message handler, otherwise fallback
         # to the default objection handler
-        self.script.on('message',
-                       self.on_message_handler if self.on_message_handler else self.agent.handlers.script_on_message)
+        self.script.on(
+            'message',
+            self.on_message_handler or self.agent.handlers.script_on_message,
+        )
+
 
         self.script.load()
         self.api = self.script.exports

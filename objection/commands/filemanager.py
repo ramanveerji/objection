@@ -59,12 +59,12 @@ def cd(args: list) -> None:
 
         return
 
+    # assume the path does not exist by default
+    does_exist = False
+
     # if we got an absolute path, check if the path
     # actually exists, and then cd to it if we can
     if os.path.isabs(path):
-
-        # assume the path does not exist by default
-        does_exist = False
 
         # check for existence based on the runtime
         if device_state.platform == Ios:
@@ -85,14 +85,9 @@ def cd(args: list) -> None:
         else:
             click.secho('Invalid path: `{0}`'.format(path), fg='red')
 
-    # directory is not absolute, tack it on at the end and
-    # see if its legit.
     else:
 
         proposed_path = device_state.platform.path_separator.join([current_dir, path])
-
-        # assume the proposed_path does not exist by default
-        does_exist = False
 
         # check for existence based on the runtime
         if device_state.platform == Ios:
@@ -270,10 +265,7 @@ def _ls_ios(path: str) -> None:
             :return:
         """
 
-        if key in attribs:
-            return attribs[key]
-
-        return 'n/a'
+        return attribs[key] if key in attribs else 'n/a'
 
     def _humanize_size_if_possible(size: str) -> str:
         """
@@ -285,6 +277,9 @@ def _ls_ios(path: str) -> None:
         """
 
         return sizeof_fmt(int(size)) if size != 'n/a' else 'n/a'
+
+    # if the directory was readable, dump the filesystem listing
+    # and attributes to screen.
 
     # if the directory was readable, dump the filesystem listing
     # and attributes to screen.
@@ -383,7 +378,7 @@ def download(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: file download <remote location> (optional: <local destination>)', bold=True)
         return
 
@@ -483,7 +478,7 @@ def upload(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: file upload <local source> (optional: <remote destination>)', bold=True)
         return
 
@@ -576,7 +571,7 @@ def rm(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: rm <target remote file>', bold=True)
         return
 
@@ -652,7 +647,7 @@ def cat(args: list):
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: file cat <remote location>', bold=True)
         return
 

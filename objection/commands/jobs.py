@@ -14,17 +14,27 @@ def show(args: list = None) -> None:
     api = state_connection.get_api()
     jobs = api.jobs_get()
 
-    click.secho(tabulate(
-        [[
-            entry['identifier'],
-            sum([
-                len(entry[x]) for x in [
-                    'invocations', 'replacements', 'implementations'
-                ] if x in entry
-            ]),
-            entry['type'],
-        ] for entry in jobs], headers=['Job ID', 'Hooks', 'Type'],
-    ))
+    click.secho(
+        tabulate(
+            [
+                [
+                    entry['identifier'],
+                    sum(
+                        len(entry[x])
+                        for x in [
+                            'invocations',
+                            'replacements',
+                            'implementations',
+                        ]
+                        if x in entry
+                    ),
+                    entry['type'],
+                ]
+                for entry in jobs
+            ],
+            headers=['Job ID', 'Hooks', 'Type'],
+        )
+    )
 
 
 def kill(args: list) -> None:

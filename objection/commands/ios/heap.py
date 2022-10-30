@@ -61,7 +61,7 @@ def instances(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: ios heap search instances <class> (eg: com.example.test)', bold=True)
         return
 
@@ -102,7 +102,7 @@ def ivars(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: ios heap print ivars <pointer> (eg: 0x600001130660)', bold=True)
         return
 
@@ -126,7 +126,7 @@ def methods(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: ios heap print methods <pointer> (eg: 0x600001130660)', bold=True)
         return
 
@@ -158,7 +158,7 @@ def execute(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: ios heap execute method <pointer> <method> (eg: 0x600001130660)', bold=True)
         return
 
@@ -183,7 +183,7 @@ def evaluate(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: ios heap execute js <pointer> (eg: 0x600001130660) ' +
                     '(optional: --inline) (optional: <JavaScript source>)', bold=True)
         return
@@ -197,7 +197,7 @@ def evaluate(args: list) -> None:
         js = ''.join(args[1:])
 
         click.secho('Reading inline JavaScript for evaluation...', dim=True)
-        click.secho('{}\n'.format(js), fg='green', dim=True)
+        click.secho(f'{js}\n', fg='green', dim=True)
 
     else:
         js = prompt(

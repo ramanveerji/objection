@@ -41,7 +41,7 @@ class ApiLoader(Plugin):
         """
 
         # sets the uri path to /api in this case
-        bp = Blueprint(self.namespace, __name__, url_prefix='/' + self.namespace)
+        bp = Blueprint(self.namespace, __name__, url_prefix=f'/{self.namespace}')
 
         # the endpoint with this function as the logic will be
         # /api/ping.

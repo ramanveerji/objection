@@ -45,7 +45,7 @@ def simple(args: list) -> None:
         return
 
     # nasty! :D
-    unique_methods = set([x.split('(')[0].split('.')[-1] for x in methods])
+    unique_methods = {x.split('(')[0].split('.')[-1] for x in methods}
 
     for method in unique_methods:
         hook = """

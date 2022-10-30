@@ -94,7 +94,7 @@ class Repl(object):
             ('class:on', ' on '),
             ('class:devicetype', '(' + params['os']['name'] + ': '),
             ('class:version', params['os']['version'] + ') '),
-            ('class:connection', '[' + dev.type + '] # '),
+            ('class:connection', f'[{dev.type}] # '),
         ]
 
     def run_command(self, document: str) -> None:
@@ -107,7 +107,7 @@ class Repl(object):
 
         logging.info(document)
 
-        if document.strip() == '':
+        if not document.strip():
             return
 
         # handle os commands
@@ -137,7 +137,7 @@ class Repl(object):
         # check if we should be presenting help instead of executing
         # a command. this is indicated by the fact that the command
         # starts with the word 'help'
-        if len(tokens) > 0 and 'help' == tokens[0]:
+        if len(tokens) > 0 and tokens[0] == 'help':
 
             # skip the 'help' entry from the tokens list so that
             # the following method can find the correct help
@@ -202,25 +202,19 @@ class Repl(object):
             # increment the walked tokens
             walked_tokens += 1
 
-            # check if the token matches a command
-            if token in dict_to_walk:
+            if token not in dict_to_walk:
+                break
 
                 # matched a dict for the token we have. we need
                 # to have *all* of the tokens match a nested dict
                 # so that we can extract the final 'exec' key.
                 # if we encounter a key that does not have nested commands,
                 # chances are we are where we need to be to exec a command.
-                if 'commands' not in dict_to_walk[token]:
+            if 'commands' in dict_to_walk[token]:
+                dict_to_walk = dict_to_walk[token]['commands']
 
-                    if 'exec' in dict_to_walk[token]:
-                        exec_method = dict_to_walk[token]['exec']
-                        break
-
-                else:
-                    dict_to_walk = dict_to_walk[token]['commands']
-
-            # stop if there is nothing that matches
-            else:
+            elif 'exec' in dict_to_walk[token]:
+                exec_method = dict_to_walk[token]['exec']
                 break
 
         return walked_tokens, exec_method
@@ -246,22 +240,18 @@ class Repl(object):
 
         for token in tokens:
 
-            # check if the token matches a command
-            if token in dict_to_walk:
-
-                # add this token to the helpfile
-                helpfile_name.append(token)
-
-                # if there are subcommands, continue with the walk
-                if 'commands' in dict_to_walk[token]:
-                    dict_to_walk = dict_to_walk[token]['commands']
-
-            # stop if we don't have a token that matches anything
-            else:
+            if token not in dict_to_walk:
                 break
 
+            # add this token to the helpfile
+            helpfile_name.append(token)
+
+            # if there are subcommands, continue with the walk
+            if 'commands' in dict_to_walk[token]:
+                dict_to_walk = dict_to_walk[token]['commands']
+
         # once we have the help, load its .txt contents
-        if len(helpfile_name) > 0:
+        if helpfile_name:
 
             help_file = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                      'helpfiles', '.'.join(helpfile_name) + '.txt')
@@ -290,7 +280,7 @@ class Repl(object):
             :return:
         """
 
-        if document.strip() in ('reconnect', 'reset'):
+        if document.strip() in {'reconnect', 'reset'}:
 
             click.secho('Reconnecting...', dim=True)
 
@@ -316,7 +306,8 @@ class Repl(object):
             Start the objection repl.
         """
 
-        banner = ("""
+        if not quiet:
+            banner = ("""
      _   _         _   _
  ___| |_|_|___ ___| |_|_|___ ___
 | . | . | | -_|  _|  _| | . |   |
@@ -327,7 +318,6 @@ class Repl(object):
         by: @leonjza from @sensepost
 """).format(__version__)
 
-        if not quiet:
             click.secho(banner, bold=True)
             click.secho('[tab] for command suggestions', fg='white', dim=True)
 
@@ -363,13 +353,13 @@ class Repl(object):
                 except frida.core.RPCException as e:
                     click.secho('A Frida agent exception has occurred.', fg='red', bold=True)
                     click.secho('{0}'.format(e), fg='red')
-                    click.secho('\nPython stack trace: {}'.format(traceback.format_exc()), dim=True)
+                    click.secho(f'\nPython stack trace: {traceback.format_exc()}', dim=True)
 
                 except Exception as e:
                     click.secho(('An unexpected internal exception has occurred. If this '
                                  'looks like a code related error, please file a bug report!'), fg='red', bold=True)
                     click.secho('{0}'.format(e), fg='red')
-                    click.secho('\nPython stack trace: {}'.format(traceback.format_exc()), dim=True)
+                    click.secho(f'\nPython stack trace: {traceback.format_exc()}', dim=True)
 
             except KeyboardInterrupt:
                 pass
