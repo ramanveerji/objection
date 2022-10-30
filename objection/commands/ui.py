@@ -13,16 +13,9 @@ def alert(args: list = None) -> None:
         :return:
     """
 
-    if len(args) <= 0:
-        message = 'objection!'
-    else:
-        message = args[0]
-
+    message = 'objection!' if len(args) <= 0 else args[0]
     if device_state.platform == Ios:
         _alert_ios(message)
-
-    if device_state.platform == Android:
-        pass
 
 
 def _alert_ios(message: str):
@@ -52,7 +45,7 @@ def ios_screenshot(args: list = None) -> None:
     destination = args[0]
 
     if not destination.endswith('.png'):
-        destination = destination + '.png'
+        destination = f'{destination}.png'
 
     api = state_connection.get_api()
     png = api.ios_ui_screenshot()
@@ -103,7 +96,7 @@ def android_screenshot(args: list = None) -> None:
         return
 
     # add the .png extension if it does not already exist
-    destination = args[0] if args[0].endswith('.png') else args[0] + '.png'
+    destination = args[0] if args[0].endswith('.png') else f'{args[0]}.png'
 
     # download the file
     api = state_connection.get_api()

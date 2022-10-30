@@ -39,7 +39,7 @@ def instances(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: android heap search instances <class> (eg: com.example.test)', bold=True)
         return
 
@@ -68,7 +68,7 @@ def methods(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: android heap print methods <hashcode> (eg: 24688232)', bold=True)
         return
 
@@ -98,7 +98,7 @@ def execute(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: android heap execute method <hashcode> <method> (eg: 24688232)', bold=True)
         return
 
@@ -106,10 +106,9 @@ def execute(args: list) -> None:
     method = args[1]
 
     api = state_connection.get_api()
-    exec_results = api.android_heap_execute_handle_method(target_handle, method,
-                                                          _should_return_as_string(args))
-
-    if exec_results:
+    if exec_results := api.android_heap_execute_handle_method(
+        target_handle, method, _should_return_as_string(args)
+    ):
         if isinstance(exec_results, dict):
             click.secho(pprint.pformat(exec_results))
         else:
@@ -123,7 +122,7 @@ def fields(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: android heap print fields <hashcode> (eg: 24688232)', bold=True)
         return
 
@@ -148,7 +147,7 @@ def evaluate(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: android heap execute js <hashcode> (eg: 24688232)', bold=True)
         return
 

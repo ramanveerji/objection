@@ -139,7 +139,7 @@ class AndroidGadget(BasePlatformGadget):
 
         # url should contain 'frida-gadget-{version}-android-{arch}.so.xz
         url_start = 'frida-gadget-'
-        url_end = 'android-' + self.architectures[self.architecture] + '.so.xz'
+        url_end = f'android-{self.architectures[self.architecture]}.so.xz'
 
         for asset in self.github.get_assets():
             if asset['name'].startswith(url_start) and asset['name'].endswith(url_end):
@@ -204,8 +204,11 @@ class AndroidPatcher(BasePlatformPatcher):
 
         self.apk_source = None
         self.apk_temp_directory = tempfile.mkdtemp(suffix='.apktemp')
-        self.apk_temp_frida_patched = self.apk_temp_directory + '.objection.apk'
-        self.apk_temp_frida_patched_aligned = self.apk_temp_directory + '.aligned.objection.apk'
+        self.apk_temp_frida_patched = f'{self.apk_temp_directory}.objection.apk'
+        self.apk_temp_frida_patched_aligned = (
+            f'{self.apk_temp_directory}.aligned.objection.apk'
+        )
+
         self.aapt = None
         self.skip_cleanup = skip_cleanup
         self.skip_resources = skip_resources
@@ -239,11 +242,16 @@ class AndroidPatcher(BasePlatformPatcher):
             click.secho('Unable to determine apktool version. Is it installed')
             return False
 
-        click.secho('Detected apktool version as: ' + o, dim=True)
+        click.secho(f'Detected apktool version as: {o}', dim=True)
 
         # ensure we have at least apktool MIN_VERSION
         if semver.compare(o, min_version) < 0:
-            click.secho('apktool version should be at least ' + min_version, fg='red', bold=True)
+            click.secho(
+                f'apktool version should be at least {min_version}',
+                fg='red',
+                bold=True,
+            )
+
             click.secho('Please see the following URL for more information: '
                         'https://github.com/sensepost/objection/wiki/Apktool-Upgrades', fg='yellow')
             return False
@@ -545,10 +553,16 @@ class AndroidPatcher(BasePlatformPatcher):
 
         click.secho('Checking for an existing networkSecurityConfig tag', dim=True)
 
-        if '{http://schemas.android.com/apk/res/android}networkSecurityConfig' in application_tag.attrib:
-            if not click.prompt('An existing network security config was found. Do you want to replace it?',
-                                type=bool, default=True):
-                return
+        if (
+            '{http://schemas.android.com/apk/res/android}networkSecurityConfig'
+            in application_tag.attrib
+            and not click.prompt(
+                'An existing network security config was found. Do you want to replace it?',
+                type=bool,
+                default=True,
+            )
+        ):
+            return
 
         # copy our network security configuration to res/xml/network_security_config.xml
         sec_config_path = os.path.join(self.apk_temp_directory, 'res', 'xml')
@@ -601,7 +615,7 @@ class AndroidPatcher(BasePlatformPatcher):
                     break
 
                 # determine the path to the launchable activity again
-                activity_path = os.path.join(smali_path, target_class) + '.smali'
+                activity_path = f'{os.path.join(smali_path, target_class)}.smali'
 
                 # if we found the activity, stop the loop
                 if os.path.exists(activity_path):
@@ -666,7 +680,7 @@ class AndroidPatcher(BasePlatformPatcher):
         pos = start
         in_annotation = False
         while pos + 1 < len(smali):
-            pos = pos + 1
+            pos += 1
             line = smali[pos].strip()
 
             # skip empty lines
@@ -699,27 +713,6 @@ class AndroidPatcher(BasePlatformPatcher):
             :return:
         """
 
-        # raw smali to inject.
-        # ref: https://koz.io/using-frida-on-android-without-root/
-
-        # if no constructor is present, the full_load_library is used
-        full_load_library = ('.method static constructor <clinit>()V\n'
-                             '   .locals 0\n'  # _revalue_locals_count() will ++ this
-                             '\n'
-                             '   .prologue\n'
-                             '   const-string v0, "frida-gadget"\n'
-                             '\n'
-                             '   invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n'
-                             '\n'
-                             '   return-void\n'
-                             '.end method\n')
-
-        # if an existing constructor is present, this partial_load_library
-        # will be used instead
-        partial_load_library = ('\n    const-string v0, "frida-gadget"\n'
-                                '\n'
-                                '    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n')
-
         # Check if there is an existing clinit here. If there is, then we need
         # to determine where the constructor ends and inject a simple loadLibrary
         # just before the end
@@ -729,20 +722,45 @@ class AndroidPatcher(BasePlatformPatcher):
             inject_point = self._determine_first_inject_point_of_smali_method_from_line(smali_lines, inject_marker)
             click.secho('Injecting loadLibrary call at line: {0}'.format(inject_point), dim=True, fg='green')
 
-            patched_smali = \
-                smali_lines[:inject_point] + partial_load_library.splitlines(keepends=True) + \
-                smali_lines[inject_point:]
+            # if an existing constructor is present, this partial_load_library
+            # will be used instead
+            partial_load_library = ('\n    const-string v0, "frida-gadget"\n'
+                                    '\n'
+                                    '    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n')
+
+            return (
+                smali_lines[:inject_point]
+                + partial_load_library.splitlines(keepends=True)
+                + smali_lines[inject_point:]
+            )
+
 
         else:
 
             # if there is no constructor, we can simply inject a fresh constructor
             click.secho('Injecting loadLibrary call at line: {0}'.format(inject_marker), dim=True, fg='green')
 
-            # inject the load_library code between
-            patched_smali = \
-                smali_lines[:inject_marker] + full_load_library.splitlines(keepends=True) + smali_lines[inject_marker:]
+            # raw smali to inject.
+            # ref: https://koz.io/using-frida-on-android-without-root/
 
-        return patched_smali
+            # if no constructor is present, the full_load_library is used
+            full_load_library = ('.method static constructor <clinit>()V\n'
+                                 '   .locals 0\n'  # _revalue_locals_count() will ++ this
+                                 '\n'
+                                 '   .prologue\n'
+                                 '   const-string v0, "frida-gadget"\n'
+                                 '\n'
+                                 '   invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V\n'
+                                 '\n'
+                                 '   return-void\n'
+                                 '.end method\n')
+
+            # inject the load_library code between
+            return (
+                smali_lines[:inject_marker]
+                + full_load_library.splitlines(keepends=True)
+                + smali_lines[inject_marker:]
+            )
 
     def _revalue_locals_count(self, patched_smali: list, inject_marker: int):
         """
@@ -824,7 +842,9 @@ class AndroidPatcher(BasePlatformPatcher):
                         bold=True)
 
         activity_path = self._determine_smali_path_for_class(
-            target_class if target_class else self._get_launchable_activity())
+            target_class or self._get_launchable_activity()
+        )
+
 
         click.secho('Reading smali from: {0}'.format(activity_path), dim=True)
 

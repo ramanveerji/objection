@@ -203,7 +203,7 @@ class IosPatcher(BasePlatformPatcher):
             self.provision_file = provision_file
 
             if bundle_id:
-                click.secho('Setting bundleid to specified value: {}'.format(bundle_id), dim=True)
+                click.secho(f'Setting bundleid to specified value: {bundle_id}', dim=True)
                 self.bundle_id = bundle_id
             else:
                 self._set_bundle_id_from_profile()
@@ -261,7 +261,7 @@ class IosPatcher(BasePlatformPatcher):
         self.provision_file = sorted(expirations, key=expirations.get, reverse=True)[0]
 
         if bundle_id:
-            click.secho('Setting bundleid to specified value: {}'.format(bundle_id), dim=True)
+            click.secho(f'Setting bundleid to specified value: {bundle_id}', dim=True)
             self.bundle_id = bundle_id
         else:
             self._set_bundle_id_from_profile()
@@ -485,7 +485,10 @@ class IosPatcher(BasePlatformPatcher):
         if len(c.out) > 0:
             self.bundle_id = c.out.strip()
 
-        click.secho('Mobile provision bundle identifier is: {}'.format(self.bundle_id), dim=True)
+        click.secho(
+            f'Mobile provision bundle identifier is: {self.bundle_id}', dim=True
+        )
+
 
         # cleanup the temp path
         os.remove(decoded_location)

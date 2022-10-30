@@ -62,7 +62,7 @@ class OutputHandlers(object):
 
             # process the response
             if message:
-                click.secho('(session detach message) ' + message, fg='red')
+                click.secho(f'(session detach message) {message}', fg='red')
 
             # Frida 12.3 crash reporting
             # https://www.nowsecure.com/blog/2019/02/07/frida-12-3-debuts-new-crash-reporting-feature/
@@ -94,15 +94,14 @@ class OutputHandlers(object):
                 click.secho('- [./incoming message] ' + '-' * 16, dim=True)
 
             # process the response
-            if message and 'payload' in message:
-                if len(message['payload']) > 0:
-                    if isinstance(message['payload'], dict):
-                        click.secho('(agent) ' + json.dumps(message['payload']))
-                    elif isinstance(message['payload'], str):
-                        click.secho('(agent) ' + message['payload'])
-                    else:
-                        click.secho('Dumping unknown agent message', fg='yellow')
-                        pprint(message['payload'])
+            if message and 'payload' in message and len(message['payload']) > 0:
+                if isinstance(message['payload'], dict):
+                    click.secho('(agent) ' + json.dumps(message['payload']))
+                elif isinstance(message['payload'], str):
+                    click.secho('(agent) ' + message['payload'])
+                else:
+                    click.secho('Dumping unknown agent message', fg='yellow')
+                    pprint(message['payload'])
 
         except Exception as e:
             click.secho('Failed to process an incoming message from agent: {0}'.format(e), fg='red', bold=True)
@@ -169,7 +168,7 @@ class Agent(object):
                 host = self.config.host
                 port = self.config.port
                 self.device = frida.get_device_manager() \
-                    .add_remote_device(f'{host}:{port}' if host is not None else f'127.0.0.1:{port}')
+                        .add_remote_device(f'{host}:{port}' if host is not None else f'127.0.0.1:{port}')
 
         elif self.config.device_type is not None:
             for dev in frida.enumerate_devices():

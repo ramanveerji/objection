@@ -60,10 +60,7 @@ class BasePlatformGadget(object):
         except json.decoder.JSONDecodeError:
             return '0'
 
-        if gadget_type in versions:
-            return versions[gadget_type]
-
-        return '0'
+        return versions[gadget_type] if gadget_type in versions else '0'
 
     def set_local_version(self, gadget_type: str, version: str):
         """
@@ -113,10 +110,7 @@ class BasePlatformPatcher(object):
         self.have_all_commands = self._check_commands()
         self.command_run_timeout = 60 * 5
 
-        if os.name == 'nt':
-            self.list2cmdline = list2cmdline
-        else:
-            self.list2cmdline = list2posix_cmdline
+        self.list2cmdline = list2cmdline if os.name == 'nt' else list2posix_cmdline
 
     def _check_commands(self) -> bool:
         """

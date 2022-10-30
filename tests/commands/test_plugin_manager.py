@@ -8,7 +8,9 @@ from ..helpers import capture
 
 class TestPluginManager(unittest.TestCase):
     def setUp(self):
-        self.plugin_path = os.path.abspath(os.path.dirname(__file__) + '/../data/plugin')
+        self.plugin_path = os.path.abspath(
+            f'{os.path.dirname(__file__)}/../data/plugin'
+        )
 
     def test_load_plugin_validates_arguments(self):
         with capture(load_plugin, []) as o:

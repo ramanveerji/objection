@@ -69,25 +69,23 @@ def connect(args: list) -> None:
     use_shm = False  # does Shared Memory temp file exist ?
     use_wal = False  # does Write-Ahead-Log temp file exist ?
     use_jnl = False  # does Journal temp file exist ?
-    write_back_tmp_sqlite = False  # if enabled temporary DB files are re-uploaded, this has not been testes
-
     # update the full remote path for future syncs
     full_remote_file = db_location \
         if os.path.isabs(db_location) else os.path.join(pwd(), db_location)
 
     click.secho('Caching local copy of database file...', fg='green')
     download([db_location, local_path])
-    if path_exists(full_remote_file + '-shm'):
+    if path_exists(f'{full_remote_file}-shm'):
         click.secho('... caching local copy of database "shm" file...', fg='green')
-        download([db_location + '-shm', local_path + '-shm'])
+        download([f'{db_location}-shm', f'{local_path}-shm'])
         use_shm = True
-    if path_exists(full_remote_file + '-wal'):
+    if path_exists(f'{full_remote_file}-wal'):
         click.secho('... caching local copy of database "wal" file...', fg='green')
-        download([db_location + '-wal', local_path + '-wal'])
+        download([f'{db_location}-wal', f'{local_path}-wal'])
         use_wal = True
-    if path_exists(full_remote_file + '-journal'):
+    if path_exists(f'{full_remote_file}-journal'):
         click.secho('... caching local copy of database "journal" file...', fg='green')
-        download([db_location + '-journal', local_path + '-journal'])
+        download([f'{db_location}-journal', f'{local_path}-journal'])
         use_jnl = True
 
     click.secho('Validating SQLite database format', dim=True)
@@ -104,29 +102,31 @@ def connect(args: list) -> None:
     click.secho('Connected to SQLite database at: {0}'.format(db_location), fg='green')
 
     # boot the litecli prompt
-    lite = LiteCli(prompt='SQLite @ {} > '.format(db_location))
+    lite = LiteCli(prompt=f'SQLite @ {db_location} > ')
     lite.connect(local_path)
     lite.run_cli()
 
     if _should_sync_once_done(args):
         click.secho('Synchronizing changes back...', dim=True)
         upload([local_path, full_remote_file])
+        write_back_tmp_sqlite = False  # if enabled temporary DB files are re-uploaded, this has not been testes
+
         # re-uploading temp sqlite files has not been tested and thus is disabled by default
         if write_back_tmp_sqlite:
             if use_shm:
-                upload([local_path + '-shm', full_remote_file + '-shm'])
+                upload([f'{local_path}-shm', f'{full_remote_file}-shm'])
             if use_wal:
-                upload([local_path + '-wal', full_remote_file + '-wal'])
+                upload([f'{local_path}-wal', f'{full_remote_file}-wal'])
             if use_jnl:
-                upload([local_path + '-journal', full_remote_file + '-journal'])
+                upload([f'{local_path}-journal', f'{full_remote_file}-journal'])
     else:
         click.secho('NOT synchronizing changes back to device. Use --sync if you want that.', fg='green')
 
     # maak skoon
     cleanup(local_path)
     if use_shm:
-        cleanup(local_path + '-shm')
+        cleanup(f'{local_path}-shm')
     if use_wal:
-        cleanup(local_path + '-wal')
+        cleanup(f'{local_path}-wal')
     if use_jnl:
-        cleanup(local_path + '-journal')
+        cleanup(f'{local_path}-journal')

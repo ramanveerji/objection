@@ -12,7 +12,7 @@ def string_canary(args: list) -> None:
         :return:
     """
 
-    if len(args) < 1:
+    if not args:
         click.secho('Usage: android monitor canary <value> (optional: <filter>)', bold=True)
         return
 

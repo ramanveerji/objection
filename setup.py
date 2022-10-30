@@ -16,9 +16,11 @@ def _package_files(directory: str, suffix: str) -> list:
     paths = []
 
     for (path, directories, filenames) in os.walk(directory):
-        for filename in filenames:
-            if filename.endswith(suffix):
-                paths.append(os.path.join('..', path, filename))
+        paths.extend(
+            os.path.join('..', path, filename)
+            for filename in filenames
+            if filename.endswith(suffix)
+        )
 
     return paths
 
@@ -35,23 +37,20 @@ setup(
     name='objection',
     description='Instrumented Mobile Pentest Framework',
     license='GPL v3',
-
     author='Leon Jacobs',
     author_email='leon@sensepost.com',
-
     url='https://github.com/sensepost/objection',
-    download_url='https://github.com/sensepost/objection/archive/' + __version__ + '.tar.gz',
-
+    download_url=f'https://github.com/sensepost/objection/archive/{__version__}.tar.gz',
     keywords=['mobile', 'instrumentation', 'pentest', 'frida', 'hook'],
     version=__version__,
-
-    # include other files
     package_data={
-        '': _package_files(os.path.join(here, 'objection/console/helpfiles'), '.txt') +
-            _package_files(os.path.join(here, 'objection/utils/assets'), '.jks') +
-            _package_files(os.path.join(here, 'objection/utils/assets'), '.js') +
-            _package_files(os.path.join(here, 'objection/utils/assets'), '.xml') +
-            [os.path.join(here, 'objection/agent.js')],  # Frida agent
+        '': _package_files(
+            os.path.join(here, 'objection/console/helpfiles'), '.txt'
+        )
+        + _package_files(os.path.join(here, 'objection/utils/assets'), '.jks')
+        + _package_files(os.path.join(here, 'objection/utils/assets'), '.js')
+        + _package_files(os.path.join(here, 'objection/utils/assets'), '.xml')
+        + [os.path.join(here, 'objection/agent.js')],  # Frida agent
     },
     packages=find_packages(),
     install_requires=requirements,

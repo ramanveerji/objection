@@ -12,11 +12,7 @@ def start(args: list) -> None:
         :return:
     """
 
-    port = 9000
-
-    if len(args) > 0:
-        port = int(args[0])
-
+    port = int(args[0]) if args else 9000
     click.secho('Starting server on port {port}...'.format(port=port), dim=True)
 
     api = state_connection.get_api()

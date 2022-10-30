@@ -83,7 +83,7 @@ class MettleLoader(Plugin):
         ip = args[0]
         port = args[1]
 
-        click.secho("Connecting to {}:{}".format(ip, port), dim=True)
+        click.secho(f"Connecting to {ip}:{port}", dim=True)
         self.api.connect_mettle(self.mettle_dylib, ip, port)
 
 

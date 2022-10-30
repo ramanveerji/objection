@@ -20,7 +20,7 @@ def evaluate(args: list) -> None:
     target_file = None
 
     # if we have an argument, let's assume it is a file path
-    if len(args) > 0:
+    if args:
 
         target_file = args[0]
         p = os.path.expanduser(target_file)
@@ -46,4 +46,4 @@ def evaluate(args: list) -> None:
     try:
         state_connection.get_api().evaluate(javascript)
     except frida.core.RPCException as e:
-        click.secho('Failed to load script: {}'.format(e), fg='red', bold=True)
+        click.secho(f'Failed to load script: {e}', fg='red', bold=True)
